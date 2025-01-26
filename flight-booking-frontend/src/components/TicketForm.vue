@@ -1,7 +1,7 @@
 <template>
   <div class="form-container">
     <div class="form-card">
-      <h2>Create/Update Ticket</h2>
+      <h2>Book Ticket</h2>
       <form @submit.prevent="submitForm">
         <div class="form-group">
           <label for="firstName">First Name:</label>

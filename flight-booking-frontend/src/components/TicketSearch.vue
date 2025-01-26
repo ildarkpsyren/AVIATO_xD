@@ -17,12 +17,30 @@
         </div>
         <button type="submit" class="submit-button">Search</button>
       </form>
+      <div v-if="tickets.length">
+        <h3>Search Results:</h3>
+        <ul>
+          <li v-for="ticket in tickets" :key="ticket.id">
+            <p><strong>First Name:</strong> {{ ticket.first_name }}</p>
+            <p><strong>Last Name:</strong> {{ ticket.last_name }}</p>
+            <p><strong>Booking ID:</strong> {{ ticket.booking_id }}</p>
+            <p><strong>IIN:</strong> {{ ticket.iin }}</p>
+            <p><strong>Departure Time:</strong> {{ ticket.departure_time }}</p>
+            <p><strong>Arrival Time:</strong> {{ ticket.arrival_time }}</p>
+            <p><strong>Departure Airport:</strong> {{ ticket.departure_airport }}</p>
+            <p><strong>Arrival Airport:</strong> {{ ticket.arrival_airport }}</p>
+          </li>
+        </ul>
+        <button @click="exportToPDF" class="export-button">Export to PDF</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import axios from '../axios';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export default {
   data() {
@@ -42,10 +60,28 @@ export default {
         const response = await axios.get('/tickets/search', {
           params: { first_name: firstName, last_name: lastName, iin }
         });
+        console.log('Response data:', response.data);
         this.tickets = response.data;
+        console.log('Tickets array:', this.tickets);
       } catch (error) {
         console.error('Error fetching tickets:', error);
       }
+    },
+    exportToPDF() {
+      const doc = new jsPDF();
+      const columns = ["First Name", "Last Name", "Booking ID", "IIN", "Departure Time", "Arrival Time", "Departure Airport", "Arrival Airport"];
+      const rows = this.tickets.map(ticket => [
+        ticket.first_name,
+        ticket.last_name,
+        ticket.booking_id,
+        ticket.iin,
+        ticket.departure_time,
+        ticket.arrival_time,
+        ticket.departure_airport,
+        ticket.arrival_airport
+      ]);
+      doc.autoTable(columns, rows);
+      doc.save('tickets.pdf');
     }
   }
 };
@@ -78,7 +114,7 @@ body {
   border-radius: 16px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 400px;
+  max-width: 500px;
   box-sizing: border-box;
   text-align: center;
 }
@@ -87,7 +123,7 @@ h2 {
   color: #333;
   font-size: 24px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 h3 {
@@ -99,7 +135,6 @@ h3 {
 
 .form-group {
   margin-bottom: 20px;
-  position: relative;
 }
 
 label {
@@ -110,16 +145,11 @@ label {
 
 input[type="text"] {
   width: 100%;
-  padding: 10px 10px 10px 40px;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   font-size: 16px;
-}
-
-input[type="text"]::placeholder {
-  color: #aaa;
 }
 
 input:focus {
@@ -127,15 +157,7 @@ input:focus {
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-.form-group i {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #aaa;
-}
-
-.submit-button {
+.submit-button, .export-button {
   width: 100%;
   padding: 15px;
   background: linear-gradient(to right, #007BFF, #00BFFF);
@@ -146,26 +168,11 @@ input:focus {
   font-size: 18px;
   font-weight: 700;
   transition: background 0.3s, box-shadow 0.3s;
+  margin-top: 10px;
 }
 
-.submit-button:hover {
+.submit-button:hover, .export-button:hover {
   background: linear-gradient(to right, #0056D2, #003A8C);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.submit-button:active {
-  animation: loading 1s infinite;
-}
-
-@keyframes loading {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 </style>
