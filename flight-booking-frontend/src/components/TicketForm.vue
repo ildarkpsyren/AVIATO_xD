@@ -17,11 +17,19 @@
         </div>
         <div class="form-group">
           <label for="departureAirport">Departure Airport:</label>
-          <input type="text" v-model="ticket.departureAirport" placeholder="Enter departure airport" required />
+          <select id="departureAirport" v-model="ticket.departureAirport" required>
+            <option v-for="airport in airports" :key="airport.code" :value="airport.code">
+              {{ airport.name }} ({{ airport.code }})
+            </option>
+          </select>
         </div>
         <div class="form-group">
           <label for="arrivalAirport">Arrival Airport:</label>
-          <input type="text" v-model="ticket.arrivalAirport" placeholder="Enter arrival airport" required />
+          <select id="arrivalAirport" v-model="ticket.arrivalAirport" required>
+            <option v-for="airport in airports" :key="airport.code" :value="airport.code">
+              {{ airport.name }} ({{ airport.code }})
+            </option>
+          </select>
         </div>
         <div class="form-group">
           <label for="departureTime">Departure Time:</label>
@@ -56,34 +64,44 @@ export default {
         departureTime: '',
         arrivalTime: ''
       },
-      ticketId: null
+      ticketId: null,
+      airports: [
+        { name: 'Almaty', code: 'ALA' },
+        { name: 'Astana', code: 'NQZ' },
+        { name: 'Aktau', code: 'SCO' },
+        { name: 'Atyrau', code: 'GUW' },
+        { name: 'Shymkent', code: 'CIT' },
+        { name: 'Aktobe', code: 'AKX' },
+        { name: 'Kostanay', code: 'KSN' },
+        { name: 'Pavlodar', code: 'PWQ' },
+        { name: 'Oral Ak Zhol', code: 'URA' },
+        { name: 'Taraz', code: 'DMB' }
+      ]
     };
   },
   methods: {
-  async submitForm() {
-    try {
-      const formattedTicket = {
-        first_name: this.ticket.firstName,
-        last_name: this.ticket.lastName,
-        iin: this.ticket.iin, // Keep IIN as a string
-        departure_airport: this.ticket.departureAirport,
-        arrival_airport: this.ticket.arrivalAirport,
-        departure_time: this.ticket.departureTime.replace('T', ' ').slice(0, 16),
-        arrival_time: this.ticket.arrivalTime.replace('T', ' ').slice(0, 16)
-      };
-      const response = await axios.post('/tickets/createticket', formattedTicket);
-      this.ticketId = response.data.id_ticket || response.data.id; // Adjust based on actual response
-      console.log('Ticket created:', response.data);
-      // Ensure the state is updated correctly
-      this.$nextTick(() => {
-        // Any DOM manipulations or state updates that need to happen after the response
-        this.$emit('ticket-created', this.ticketId); // Emit an event to notify parent component
-      });
-    } catch (error) {
-      console.error('Error creating ticket:', error);
+    async submitForm() {
+      try {
+        const formattedTicket = {
+          first_name: this.ticket.firstName,
+          last_name: this.ticket.lastName,
+          iin: this.ticket.iin,
+          departure_airport: this.ticket.departureAirport,
+          arrival_airport: this.ticket.arrivalAirport,
+          departure_time: this.ticket.departureTime.replace('T', ' ').slice(0, 16),
+          arrival_time: this.ticket.arrivalTime.replace('T', ' ').slice(0, 16)
+        };
+        const response = await axios.post('/tickets/createticket', formattedTicket);
+        this.ticketId = response.data.id_ticket || response.data.id;
+        console.log('Ticket created:', response.data);
+        this.$nextTick(() => {
+          this.$emit('ticket-created', this.ticketId);
+        });
+      } catch (error) {
+        console.error('Error creating ticket:', error);
+      }
     }
   }
-}
 };
 </script>
 
@@ -145,7 +163,8 @@ label {
 }
 
 input[type="text"],
-input[type="datetime-local"] {
+input[type="datetime-local"],
+select {
   width: 100%;
   padding: 10px 10px 10px 40px;
   border: 1px solid #ccc;
@@ -160,7 +179,8 @@ input[type="datetime-local"]::placeholder {
   color: #aaa;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #007BFF;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
